@@ -1,0 +1,21 @@
+{
+  "name": "csgorepairedcompletion",
+  "version": "1.0.0",
+  "description": "",
+  "main": "completion.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "CSGORepairedCompletion"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.19.2",
+    "chalk": "^4.1.0",
+    "googleapis": "^39.2.0",
+    "json2csv": "^5.0.1",
+    "xml2js": "^0.4.23"
+  }
+}
