@@ -3,3 +3,4 @@ credentials.json
 *.csv
 *.log
 *.eslintrc.json
+.vscode/

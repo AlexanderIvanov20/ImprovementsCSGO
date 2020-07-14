@@ -4,7 +4,7 @@
   "description": "Project which works with CSGO items",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node completion.js"
   },
   "repository": {
     "type": "git",
@@ -30,6 +30,7 @@
     "chalk": "^4.1.0",
     "googleapis": "^39.2.0",
     "json2csv": "^5.0.1",
+    "ws": "^7.3.1",
     "xml2js": "^0.4.23"
   }
 }
