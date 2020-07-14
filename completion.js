@@ -1,5 +1,5 @@
 const axios = require('axios').default;
-const { steamKey, filterDayCount, minItemsCount, dividerPrice3, SteamMultiplier } = require('./config');
+const { steamKey, filterDayCount, minItemsCount, dividerPrice3, SteamMultiplier, dividerSteamForPrice3 } = require('./config');
 const fs = require('fs');
 const chalk = require('chalk');
 const jsonToCsv = require('json2csv').parse;
@@ -108,13 +108,12 @@ const formatedDate = () => {
   }
 
   /* Запись предметов в файл */
-  // var items = Object.keys(responseSteam.data).map((value) => {
-  //   return {
-  //     name: value,
-  //     price: responseSteam.data[value]
-  //   }
-  // });
-  // writeOrAppendCSVFile('./steam.csv', items);
+  var itemsStem = Object.keys(responseSteam.data).map((value) => {
+    return {
+      name: value,
+      price: responseSteam.data[value]
+    }
+  });
 
   var prefinalUrl = `https://market.csgo.com/api/v2/get-list-items-info?key=${steamKey}`;
   var objectForCSV = [];
@@ -170,6 +169,7 @@ const formatedDate = () => {
     /* Cинтаксический анализ (фильтрация) полученных данных (истории цен). */
     var finalObject = [];
     var finalObjectForGoogleDisk = [];
+    var finalObjectSecondStep = [];
     Object.keys(responseOrError).forEach((value) => {
       var item = responseOrError[value];
       var history = item.history;
@@ -239,6 +239,13 @@ const formatedDate = () => {
           price: Number((newAverage / curs).toFixed(2)),
           russian: value
         });
+        finalObjectSecondStep.push({
+          name: value,
+          // leastPrice: 
+          priceAveragedel: Number((newAverage / curs).toFixed(2)),
+          steamMultiplier: Number((responseSteam.data[value] / SteamMultiplier).toFixed(2)),
+          priceStemDel: Number((responseSteam.data[value] / dividerSteamForPrice3).toFixed(2))
+        })
       }
     });
 
@@ -254,7 +261,8 @@ const formatedDate = () => {
     /* Запись всех данных */
     writeOrAppendCSVFile(objectForCSV, 'filterPrice3.csv');
     writeOrAppendCSVFile(objectForCSV1, 'price3.csv');
-    // writeOrAppendCSVFile(, './filterSteamAverage.csv');
+    // writeOrAppendCSVFile(objectForCSV2, './filterSteamAverage.csv');
+    // writeOrAppendCSVFile(itemsStem, './steam.csv');
 
     prefinalUrl = `https://market.csgo.com/api/v2/get-list-items-info?key=${steamKey}`;
   }
