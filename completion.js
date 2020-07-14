@@ -1,5 +1,5 @@
 const axios = require('axios').default;
-const { steamKey, filterDayCount, minItemsCount, dividerPrice3 } = require('./config');
+const { steamKey, filterDayCount, minItemsCount, dividerPrice3, SteamMultiplier } = require('./config');
 const fs = require('fs');
 const chalk = require('chalk');
 const jsonToCsv = require('json2csv').parse;
@@ -87,32 +87,34 @@ const getCursOfDollar = async () => {
 /* Форматирование даты для консольного вывода */
 const formatedDate = () => {
   var date = new Date();
-  var finalDate = `[${date.getUTCDate()}/${date.getMonth() + 1}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}.${date.getMilliseconds()}]`;
-  return finalDate;
+  var finalDate1 = `[${date.getUTCDate()}/${date.getMonth() + 1}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}.${date.getMilliseconds()}]`;
+  return finalDate1;
 }
 
 
 /* Ocновной поток выпонения программы. */
 (async () => {
   /* Очистка логов */
+  var finalDate;
   fs.writeFileSync('logsPrice3.log', '');
 
   /* Сбор имен всех предметов. */
+  var responseSteam;
   try {
-    var responseSteam = await axios.get(urlItems);
+    responseSteam = await axios.get(urlItems);
     var keysItems = Object.keys(responseSteam.data);
   } catch (e) {
     console.error(`An error occurred ${e}`);
   }
 
   /* Запись предметов в файл */
-  var items = Object.keys(responseSteam.data).map((value) => {
-    return {
-      name: value,
-      price: responseSteam.data[value]
-    }
-  });
-  writeOrAppendCSVFile('./steam.csv', items);
+  // var items = Object.keys(responseSteam.data).map((value) => {
+  //   return {
+  //     name: value,
+  //     price: responseSteam.data[value]
+  //   }
+  // });
+  // writeOrAppendCSVFile('./steam.csv', items);
 
   var prefinalUrl = `https://market.csgo.com/api/v2/get-list-items-info?key=${steamKey}`;
   var objectForCSV = [];
@@ -128,7 +130,7 @@ const formatedDate = () => {
       prefinalUrl += `&list_hash_name[]=${encodedTitle}`;
     });
 
-    const finalDate = formatedDate();
+    finalDate = formatedDate();
     console.log(chalk.green(`${finalDate} Отправка запроса...`));
     loggingActions('Отправка запроса: ' + temporaryArray);
 
@@ -138,7 +140,7 @@ const formatedDate = () => {
       var point = true;
 
       while (point) {
-        const finalDate = formatedDate();
+        finalDate = formatedDate();
         console.log(chalk.yellow(`${finalDate} Повторный запрос.`));
         loggingActions('Повторный запрос.');
 
@@ -151,7 +153,7 @@ const formatedDate = () => {
           point = false;
         }
 
-        const finalDate = formatedDate();
+        finalDate = formatedDate();
         console.log(chalk.red(`${finalDate} Ошибка: `) + responseOrError.error);
         loggingActions('Ошибка: ' + responseOrError.error);
       }
@@ -159,7 +161,7 @@ const formatedDate = () => {
     } else {
       responseOrError = responseOrError.data;
     }
-    const finalDate = formatedDate();
+    finalDate = formatedDate();
     console.log(chalk.cyan(`${finalDate} Полчение данных.`));
     loggingActions('Полчение данных: ' + Object.values(responseOrError).map((value) => {
       return value.average;
@@ -171,6 +173,7 @@ const formatedDate = () => {
     Object.keys(responseOrError).forEach((value) => {
       var item = responseOrError[value];
       var history = item.history;
+      var steamMultiplierPrice = Number((responseSteam.data[value] * curs * SteamMultiplier).toFixed(2));
 
       var filteredHistory = [];
       var nowDate = new Date();
@@ -185,7 +188,7 @@ const formatedDate = () => {
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
         /* Сортировка. */
-        if (diffDays <= filterDayCount) {
+        if (diffDays <= filterDayCount && element[1] <= steamMultiplierPrice) {
           filteredHistory.push(element);
         }
       });
@@ -194,6 +197,7 @@ const formatedDate = () => {
       if (filteredHistory.length >= minItemsCount) {
         filteredHistory.forEach((element) => {
           /* Пересчёт среднего арифметического. */
+          var date = new Date(element[0] * 1000);
           element.push(
             `${date.getUTCDate()}/${date.getMonth() + 1}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`
           );
@@ -207,7 +211,6 @@ const formatedDate = () => {
           if (newMin > element[1]) {
             newMin = element[1];
           }
-
         });
       }
       /* Новое среднее арифметическое. */
@@ -224,10 +227,11 @@ const formatedDate = () => {
       if (finalFilteredHistory.length !== 0) {
         finalObject.push({
           name: value,
+          SteamMultiplier: steamMultiplierPrice,
           average: Number(newAverage.toFixed(2)),
-          history: finalFilteredHistory,
+          min: newMin,
           max: newMax,
-          min: newMin
+          history: finalFilteredHistory
         });
         /* Перевод рублей в доллары. */
         finalObjectForGoogleDisk.push({
@@ -243,14 +247,14 @@ const formatedDate = () => {
     objectForCSV1.push(...finalObjectForGoogleDisk);
 
     /* Запись в файлы. */
-    const finalDate = formatedDate();
+    finalDate = formatedDate();
     console.log(chalk.gray(`${finalDate} Запись данных в CSV файл. Курс: ` + curs));
     loggingActions('Запись данных в CSV файл. Курс: ' + curs);
 
     /* Запись всех данных */
     writeOrAppendCSVFile(objectForCSV, 'filterPrice3.csv');
     writeOrAppendCSVFile(objectForCSV1, 'price3.csv');
-    writeOrAppendCSVFile(, './filterSteamAverage.csv');
+    // writeOrAppendCSVFile(, './filterSteamAverage.csv');
 
     prefinalUrl = `https://market.csgo.com/api/v2/get-list-items-info?key=${steamKey}`;
   }
