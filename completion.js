@@ -10,24 +10,24 @@ const uploadFileCompletion = require('./uploadFileCompletion');
 var urlItems = 'https://api.steamapis.com/market/items/730?api_key=bmyRVmF1HOQ9IH5LmSInrD8FgV4&format=comact';
 
 
-// Логгирование действий.
+/* Логгирование действий. */
 const loggingActions = async (message) => {
-  // Выборка текущего времени.
+  /* Выборка текущего времени. */
   const date = new Date();
   var finalMessage = `[${date.getUTCDate()}/${date.getMonth() + 1}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}] -- ${message}\n`;
 
-  // Проверка файла на существование.
+  /* Проверка файла на существование. */
   if (fs.existsSync('logsPrice3.log')) {
     var data = fs.readFileSync('logsPrice3.log', 'utf8');
 
-    // Корректная запись.
+    /* Корректная запись. */
     var trimmedData = data.trim().replace('\r', '');
     if ((!trimmedData.endsWith('\n')) && trimmedData != '') {
       trimmedData += '\n';
     }
     trimmedData += finalMessage;
 
-    // Запись сформированной строки.
+    /* Запись сформированной строки. */
     fs.writeFileSync('logsPrice3.log', trimmedData, 'utf8');
   } else {
     fs.writeFileSync('logsPrice3.log', finalMessage, 'utf8');
@@ -35,13 +35,13 @@ const loggingActions = async (message) => {
 }
 
 
-// Функция сна для таймаута.
+/* Функция сна для таймаута. */
 const sleep = (ms) => {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 
-// История цен предметов.
+/* История цен предметов. */
 const makeRequest = async (prefinalUrl) => {
   try {
     var responseMarket = await axios.get(prefinalUrl);
@@ -55,7 +55,7 @@ const makeRequest = async (prefinalUrl) => {
 }
 
 
-// Запись данных в файл.
+/* Запись данных в файл. */
 const writeOrAppendCSVFile = async (recievedData, fileTitle) => {
   if (fileTitle === 'filterPrice3.csv') {
     const csv = jsonToCsv(recievedData, {
@@ -79,13 +79,13 @@ const writeOrAppendCSVFile = async (recievedData, fileTitle) => {
 }
 
 
-// Получение курса доллара.
+/* Получение курса доллара. */
 const getCursOfDollar = async () => {
   var url = 'http://www.cbr.ru/scripts/XML_dynamic.asp?date_req1=11/06/2020&date_req2=12/06/2020&VAL_NM_RQ=R01235';
   var response = await axios.get(url);
   var data = response.data;
 
-  // Синтексический анализ полченного XML.
+  /* Синтексический анализ полченного XML. */
   var cursNum = 0;
   var extractedData = "";
   var parser = new parseXML.Parser();
@@ -97,16 +97,26 @@ const getCursOfDollar = async () => {
 }
 
 
-// Ocновной поток выпонения программы.
+/* Ocновной поток выпонения программы. */
 (async () => {
+  var date;
+  var finalDate;
   fs.writeFileSync('logsPrice3.log', '');
-  // Сбор имен всех предметов.
+  /* Сбор имен всех предметов. */
   try {
     var responseSteam = await axios.get(urlItems);
     var keysItems = Object.keys(responseSteam.data);
   } catch (e) {
     console.error(`An error occurred ${e}`);
   }
+
+  /* Запись предметов в файл */
+  const csvSteam = jsonToCsv(keysItems, {
+    fields: [ 'name', 'price' ],
+    delimiter: ';',
+    quote: ','
+  });
+  fs.writeFileSync('./steam.csv', csvSteam);
 
   var prefinalUrl = `https://market.csgo.com/api/v2/get-list-items-info?key=${steamKey}`;
   var objectForCSV = [];
@@ -121,8 +131,8 @@ const getCursOfDollar = async () => {
       prefinalUrl += `&list_hash_name[]=${encodedTitle}`;
     });
 
-    var date = new Date();
-    var finalDate = `[${date.getUTCDate()}/${date.getMonth() + 1}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}.${date.getMilliseconds()}]`;
+    date = new Date();
+    finalDate = `[${date.getUTCDate()}/${date.getMonth() + 1}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}.${date.getMilliseconds()}]`;
     console.log(chalk.green(`${finalDate} Отправка запроса...`));
     loggingActions('Отправка запроса: ' + temporaryArray);
 
@@ -132,8 +142,8 @@ const getCursOfDollar = async () => {
       var point = true;
 
       while (point) {
-        var date = new Date();
-        var finalDate = `[${date.getUTCDate()}/${date.getMonth() + 1}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}.${date.getMilliseconds()}]`;
+        date = new Date();
+        finalDate = `[${date.getUTCDate()}/${date.getMonth() + 1}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}.${date.getMilliseconds()}]`;
         console.log(chalk.yellow(`${finalDate} Повторный запрос.`));
         loggingActions('Повторный запрос.');
 
@@ -146,8 +156,8 @@ const getCursOfDollar = async () => {
           point = false;
         }
 
-        var date = new Date();
-        var finalDate = `[${date.getUTCDate()}/${date.getMonth() + 1}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}.${date.getMilliseconds()}]`;
+        date = new Date();
+        finalDate = `[${date.getUTCDate()}/${date.getMonth() + 1}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}.${date.getMilliseconds()}]`;
         console.log(chalk.red(`${finalDate} Ошибка: `) + responseOrError.error);
         loggingActions('Ошибка: ' + responseOrError.error);
       }
@@ -155,8 +165,8 @@ const getCursOfDollar = async () => {
     } else {
       responseOrError = responseOrError.data;
     }
-    var date = new Date();
-    var finalDate = `[${date.getUTCDate()}/${date.getMonth() + 1}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}.${date.getMilliseconds()}]`;
+    date = new Date();
+    finalDate = `[${date.getUTCDate()}/${date.getMonth() + 1}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}.${date.getMilliseconds()}]`;
     console.log(chalk.cyan(`${finalDate} Полчение данных.`));
     loggingActions('Полчение данных: ' + Object.values(responseOrError).map((value) => {
       return value.average;
@@ -181,7 +191,7 @@ const getCursOfDollar = async () => {
         const diffTime = Math.abs(nowDate - date);
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-        // Сортировка.
+        /* Сортировка. */
         if (diffDays <= filterDayCount) {
           filteredHistory.push(element);
         }
@@ -190,14 +200,14 @@ const getCursOfDollar = async () => {
       var finalFilteredHistory = [];
       if (filteredHistory.length >= minItemsCount) {
         filteredHistory.forEach((element) => {
-          // Пересчёт среднего арифметического.
+          /* Пересчёт среднего арифметического. */
           element.push(
             `${date.getUTCDate()}/${date.getMonth() + 1}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`
           );
           finalFilteredHistory.push(element);
           newAverage += element[1];
 
-          // Пересчет макс. и мин. цены.
+          /* Пересчет макс. и мин. цены. */
           if (newMax < element[1]) {
             newMax = element[1];
           }
@@ -207,17 +217,17 @@ const getCursOfDollar = async () => {
 
         });
       }
-      // Новое среднее арифметическое.
+      /* Новое среднее арифметическое. */
       newAverage = newAverage / filteredHistory.length;
 
-      // Деление на различные делители в зависимости от промежутка.
+      /* Деление на различные делители в зависимости от промежутка. */
       Array.from(dividerPrice3).forEach((value) => {
         if (newAverage >= value.from && newAverage <= value.to) {
           newAverage /= value.divider;
         }
       });
 
-      // Добавление обработанных предметов.
+      /* Добавление обработанных предметов. */
       if (finalFilteredHistory.length !== 0) {
         finalObject.push({
           name: value,
@@ -226,7 +236,7 @@ const getCursOfDollar = async () => {
           max: newMax,
           min: newMin
         });
-        // Перевод рублей в доллары.
+        /* Перевод рублей в доллары. */
         finalObjectForGoogleDisk.push({
           name: value,
           price: Number((newAverage / curs).toFixed(2)),
@@ -235,13 +245,13 @@ const getCursOfDollar = async () => {
       }
     });
 
-    // Дополнение основного массива.
+    /* Дополнение основного массива. */
     objectForCSV.push(...finalObject);
     objectForCSV1.push(...finalObjectForGoogleDisk);
 
-    // Запись в файлы.
-    var date = new Date();
-    var finalDate = `[${date.getUTCDate()}/${date.getMonth() + 1}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}.${date.getMilliseconds()}]`;
+    /* Запись в файлы. */
+    date = new Date();
+    finalDate = `[${date.getUTCDate()}/${date.getMonth() + 1}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}.${date.getMilliseconds()}]`;
     console.log(chalk.gray(`${finalDate} Запись данных в CSV файл. Курс: ` + curs));
     loggingActions('Запись данных в CSV файл. Курс: ' + curs);
 
@@ -250,6 +260,6 @@ const getCursOfDollar = async () => {
 
     prefinalUrl = `https://market.csgo.com/api/v2/get-list-items-info?key=${steamKey}`;
   }
-  // Загрузка файла в Google диск.
+  /* Загрузка файла в Google диск. */
   uploadFileCompletion.startUploading();
 })();

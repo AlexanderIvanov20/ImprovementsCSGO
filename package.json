@@ -1,0 +1,35 @@
+{
+  "name": "improvementscsgo",
+  "version": "1.0.0",
+  "description": "Project which works with CSGO items",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AlexanderIvanov20/ImprovementsCSGO.git"
+  },
+  "keywords": [
+    "CSGO",
+    "CSGOMarket",
+    "Database",
+    "CSGOItems"
+  ],
+  "author": "Egor Petrenko",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AlexanderIvanov20/ImprovementsCSGO/issues"
+  },
+  "homepage": "https://github.com/AlexanderIvanov20/ImprovementsCSGO#readme",
+  "devDependencies": {
+    "eslint": "^7.4.0"
+  },
+  "dependencies": {
+    "axios": "^0.19.2",
+    "chalk": "^4.1.0",
+    "googleapis": "^39.2.0",
+    "json2csv": "^5.0.1",
+    "xml2js": "^0.4.23"
+  }
+}

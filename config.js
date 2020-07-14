@@ -11,5 +11,6 @@ module.exports = {
         { from: 0.01, to: 10, divider: 1.5 },
         { from: 10.01, to: 50, divider: 1.6 },
         
-    ]
+    ],
+    dividerSteamForPrice3: 1.2
 }
