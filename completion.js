@@ -108,12 +108,13 @@ const formatedDate = () => {
   }
 
   /* Запись предметов в файл */
-  var itemsStem = Object.keys(responseSteam.data).map((value) => {
+  var itemsSteam = Object.keys(responseSteam.data).map((value) => {
     return {
       name: value,
       price: responseSteam.data[value]
     }
   });
+  writeOrAppendCSVFile(itemsSteam, './steam.csv');
 
   var prefinalUrl = `https://market.csgo.com/api/v2/get-list-items-info?key=${steamKey}`;
   var objectForCSV = [];
@@ -233,25 +234,31 @@ const formatedDate = () => {
           max: newMax,
           history: finalFilteredHistory
         });
+        var priceAveragedel =  Number((newAverage / curs).toFixed(2));
+        var priceStemDel =  Number((responseSteam.data[value] / dividerSteamForPrice3).toFixed(2));
+        var minPriceWord = (responseSteam.data[value] <= (newAverage / curs)) ? 'steam' : 'average';
+        var minPriceDel = (priceStemDel <= priceAveragedel) ? priceStemDel : priceAveragedel;
         /* Перевод рублей в доллары. */
         finalObjectForGoogleDisk.push({
           name: value,
-          price: Number((newAverage / curs).toFixed(2)),
+          price: Number(minPriceDel.toFixed(2)),
           russian: value
         });
         finalObjectSecondStep.push({
           name: value,
-          // leastPrice: 
-          priceAveragedel: Number((newAverage / curs).toFixed(2)),
+          leastPrice: minPriceWord,
           steamMultiplier: Number((responseSteam.data[value] / SteamMultiplier).toFixed(2)),
-          priceStemDel: Number((responseSteam.data[value] / dividerSteamForPrice3).toFixed(2))
-        })
+          price: minPriceDel,
+          priceAveragedel: priceAveragedel,
+          priceStemDel: priceStemDel
+        });
       }
     });
 
     /* Дополнение основного массива. */
     objectForCSV.push(...finalObject);
     objectForCSV1.push(...finalObjectForGoogleDisk);
+    objectForCSV2.push(...finalObjectSecondStep);
 
     /* Запись в файлы. */
     finalDate = formatedDate();
@@ -261,7 +268,7 @@ const formatedDate = () => {
     /* Запись всех данных */
     writeOrAppendCSVFile(objectForCSV, 'filterPrice3.csv');
     writeOrAppendCSVFile(objectForCSV1, 'price3.csv');
-    // writeOrAppendCSVFile(objectForCSV2, './filterSteamAverage.csv');
+    writeOrAppendCSVFile(objectForCSV2, './filterSteamAverage.csv');
     // writeOrAppendCSVFile(itemsStem, './steam.csv');
 
     prefinalUrl = `https://market.csgo.com/api/v2/get-list-items-info?key=${steamKey}`;
