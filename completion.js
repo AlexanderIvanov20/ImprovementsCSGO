@@ -167,8 +167,13 @@ const formatedDate = () => {
 
         /* Логгирование ошибки */
         finalDate = formatedDate();
-        console.log(chalk.red(`${finalDate} Ошибка: `) + responseOrError.e.message);
-        loggingActions('Ошибка: ' + responseOrError.e.message);
+        try {
+          console.log(chalk.red(`${finalDate} Ошибка: `) + responseOrError.e.message);
+          loggingActions('Ошибка: ' + responseOrError.e.message);
+        } catch (e) {
+          console.log(chalk.red(`${finalDate} Ошибка: `) + responseOrError.e);
+          loggingActions('Ошибка: ' + responseOrError.e);
+        }
       }
       responseOrError = responseOrError.data;
     } else {
@@ -321,8 +326,8 @@ const formatedDate = () => {
     loggingActions('Запись данных в CSV файл. Курс: ' + curs);
 
     /* Запись всех данных */
-    writeOrAppendCSVFile(objectForCSV, 'filterPrice3.csv');
-    writeOrAppendCSVFile(objectForCSV1, 'price3.csv');
+    writeOrAppendCSVFile(objectForCSV, './filterPrice3.csv');
+    writeOrAppendCSVFile(objectForCSV1, './price3.csv');
     writeOrAppendCSVFile(objectForCSV2, './filterSteamAverage.csv');
     writeOrAppendCSVFile(objectForCSV3, './filterSteamAverageForNotAtFilter.csv');
     writeOrAppendCSVFile(objectForCSV4, './price4.csv');
