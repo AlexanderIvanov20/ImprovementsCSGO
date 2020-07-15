@@ -120,6 +120,7 @@ const formatedDate = () => {
   var objectForCSV = [];
   var objectForCSV1 = [];
   var objectForCSV2 = [];
+  var objectForCSV3 = [];
   var curs = await getCursOfDollar();
 
   for (var item = 0; item < keysItems.length; item += 50) {
@@ -171,12 +172,15 @@ const formatedDate = () => {
     var finalObject = [];
     var finalObjectForGoogleDisk = [];
     var finalObjectSecondStep = [];
+    var finalObjectThirdStep = [];
+
     Object.keys(responseOrError).forEach((value) => {
       var item = responseOrError[value];
       var history = item.history;
       var steamMultiplierPrice = Number((responseSteam.data[value] * curs * SteamMultiplier).toFixed(2));
 
       var filteredHistory = [];
+      var notFilteredHistory = [];
       var nowDate = new Date();
       var newAverage = 0;
       var newMin = 10000000;
@@ -191,10 +195,13 @@ const formatedDate = () => {
         /* Сортировка. */
         if (diffDays <= filterDayCount && element[1] <= steamMultiplierPrice) {
           filteredHistory.push(element);
+        } else {
+          notFilteredHistory.push(element);
         }
       });
 
       var finalFilteredHistory = [];
+      var finalNotFilteredHistory = [];
       if (filteredHistory.length >= minItemsCount) {
         filteredHistory.forEach((element) => {
           /* Пересчёт среднего арифметического. */
@@ -213,7 +220,18 @@ const formatedDate = () => {
             newMin = element[1];
           }
         });
+      } else {
+        finalNotFilteredHistory.push(...notFilteredHistory);
       }
+
+      var oldAverage = item.average;
+      finalObjectThirdStep.push({
+        name: value,
+        leastPrice: 0,
+        steamMultiplier: Number((responseSteam.data[value] / SteamMultiplier).toFixed(2)),
+
+      });
+
       /* Новое среднее арифметическое. */
       newAverage = newAverage / filteredHistory.length;
 
@@ -234,10 +252,17 @@ const formatedDate = () => {
           max: newMax,
           history: finalFilteredHistory
         });
-        var priceAveragedel =  Number((newAverage / curs).toFixed(2));
-        var priceStemDel =  Number((responseSteam.data[value] / dividerSteamForPrice3).toFixed(2));
+        var priceAveragedel = Number((newAverage / curs).toFixed(2));
+        var priceStemDel = responseSteam.data[value];
         var minPriceWord = (responseSteam.data[value] <= (newAverage / curs)) ? 'steam' : 'average';
         var minPriceDel = (priceStemDel <= priceAveragedel) ? priceStemDel : priceAveragedel;
+
+        Array.from(dividerSteamForPrice3).forEach((value) => {
+          if (priceStemDel >= value.from && priceStemDel <= value.to) {
+            priceStemDel /= value.divider;
+          }
+        });
+
         /* Перевод рублей в доллары. */
         finalObjectForGoogleDisk.push({
           name: value,
@@ -250,7 +275,7 @@ const formatedDate = () => {
           steamMultiplier: Number((responseSteam.data[value] / SteamMultiplier).toFixed(2)),
           price: minPriceDel,
           priceAveragedel: priceAveragedel,
-          priceStemDel: priceStemDel
+          priceStemDel: Number((priceStemDel).toFixed(2))
         });
       }
     });

@@ -12,6 +12,11 @@ module.exports = {
         { from: 10.01, to: 50, divider: 1.6 },
         
     ],
-    dividerSteamForPrice3: 1.2,
-    SteamMultiplier: 1.5
+    dividerSteamForPrice3: [
+        { from: 0.00001, to: 5000000, divider: 1.2 }
+    ],
+    SteamMultiplier: 1.5,
+    dividerForNotAtFilter: [
+        { from: 0.00001, to: 5000000, divider: 1.5 }
+    ]
 }
