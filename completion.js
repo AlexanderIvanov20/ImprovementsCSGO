@@ -135,6 +135,7 @@ const formatedDate = () => {
   var curs = await getCursOfDollar();
 
   for (var item = 0; item < keysItems.length; item += 50) {
+  // for (var item = 0; item < 50; item += 50) {
     /* Формирование ссылки для 50-ти предметов. */
     var temporaryArray = keysItems.slice(item, item + 50);
     temporaryArray.forEach((value) => {
@@ -153,8 +154,8 @@ const formatedDate = () => {
       /* Безконечный цикл, пока не прийдет ответ */
       while (point) {
         finalDate = formatedDate();
-        console.log(chalk.yellow(`${finalDate} Повторный запрос.`));
-        loggingActions('Повторный запрос.');
+        console.log(chalk.yellow(`${finalDate} Повторный запрос. Тайаут 10 секунд.`));
+        loggingActions('Повторный запрос. Тайаут 10 секунд.');
 
         /* Таймаут 10 секунд. */
         await sleep(10000);
@@ -191,7 +192,6 @@ const formatedDate = () => {
     var finalObjectSecondStep = [];
     var finalObjectThirdStep = [];
     var finalObjectThirdStepPrice4 = [];
-
     /* Перебор историй полученных историй */
     Object.keys(responseOrError).forEach((value) => {
       var item = responseOrError[value];
@@ -335,5 +335,6 @@ const formatedDate = () => {
     prefinalUrl = `https://market.csgo.com/api/v2/get-list-items-info?key=${steamKey}`;
   }
   /* Загрузка файла в Google диск. */
+  console.log(chalk.red('Запись данных на Google Диск.'));
   uploadFileCompletion.startUploading();
 })();

@@ -73,26 +73,38 @@ async function storeFiles(auth) {
     body: fs.createReadStream(__dirname + '\\price3.csv')
   };
 
+  var fileMetadata4 = {
+    'name': 'price4.csv'
+  };
+  var media4 = {
+    mimeType: 'text/plain',
+    body: fs.createReadStream(__dirname + '\\price4.csv')
+  };
+
   drive.files.create({
     resource: fileMetadata3,
     media: media3,
+    fields: 'id'
+  });
+  drive.files.create({
+    resource: fileMetadata4,
+    media: media4,
     fields: 'id'
   });
 }
 
 
 // Обновление файла 
-async function updateFile(auth, fileId) {
+async function updateFile(auth, fileId, fileName) {
   const drive = google.drive({
     version: 'v3', auth
   });
-
   var fileMetadata = {
-    'name': 'price3.csv'
+    name: `\\${fileName}`
   };
   var media = {
     mimeType: 'text/plain',
-    body: fs.createReadStream(__dirname + '\\price3.csv')
+    body: fs.createReadStream(__dirname + `\\${fileName}`)
   };
 
   // Обновление файла
@@ -124,11 +136,12 @@ function listFiles(auth) {
       if (point) {
         files.map((file) => {
           // Обновление файла
-          if (file.name === 'price3.csv') updateFile(auth, file.id);
+          if (file.name === 'price3.csv') updateFile(auth, file.id, 'price3.csv');
+          if (file.name === 'price4.csv') updateFile(auth, file.id, 'price4.csv');
         });
       }
       else {
-        storeFiles(auth);
+        storeFiles(auth,);
       }
     }
     else {
