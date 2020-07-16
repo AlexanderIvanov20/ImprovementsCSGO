@@ -100,11 +100,11 @@ async function updateFile(auth, fileId, fileName) {
     version: 'v3', auth
   });
   var fileMetadata = {
-    name: `\\${fileName}`
+    name: `/${fileName}`
   };
   var media = {
     mimeType: 'text/plain',
-    body: fs.createReadStream(__dirname + `\\${fileName}`)
+    body: fs.createReadStream(__dirname + `/${fileName}`)
   };
 
   // Обновление файла
