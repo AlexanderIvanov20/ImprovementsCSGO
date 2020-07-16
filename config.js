@@ -18,5 +18,8 @@ module.exports = {
     SteamMultiplier: 1.5,
     dividerForNotAtFilter: [
         { from: 0.00001, to: 5000000, divider: 1.5 }
+    ],
+    dividerSteamForPrice4: [
+        { from: 0.00001, to: 5500000, divider: 1.5 }
     ]
 }

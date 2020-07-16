@@ -6,7 +6,8 @@ const {
   dividerPrice3,
   SteamMultiplier,
   dividerSteamForPrice3,
-  dividerForNotAtFilter
+  dividerForNotAtFilter,
+  dividerSteamForPrice4
 } = require('./config');
 const fs = require('fs');
 const chalk = require('chalk');
@@ -243,7 +244,7 @@ const formatedDate = () => {
             priceAveragedel1 /= value1.divider;
           }
         });
-        Array.from(dividerSteamForPrice3).forEach((value) => {
+        Array.from(dividerSteamForPrice4).forEach((value) => {
           if (priceSteamDel1 >= value.from && priceSteamDel1 <= value.to) {
             priceSteamDel1 /= value.divider;
           }
