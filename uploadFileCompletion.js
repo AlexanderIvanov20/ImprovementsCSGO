@@ -1,6 +1,7 @@
 const readline = require('readline');
 const { google } = require('googleapis');
 const fs = require('fs');
+// const path = require('path');
 
 const SCOPES = ['https://www.googleapis.com/auth/drive'];
 const TOKEN_PATH = 'token.json';
@@ -70,7 +71,7 @@ async function storeFiles(auth) {
   };
   var media3 = {
     mimeType: 'text/plain',
-    body: fs.createReadStream(__dirname + '\\price3.csv')
+    body: fs.createReadStream('price3.csv')
   };
 
   var fileMetadata4 = {
@@ -78,7 +79,7 @@ async function storeFiles(auth) {
   };
   var media4 = {
     mimeType: 'text/plain',
-    body: fs.createReadStream(__dirname + '\\price4.csv')
+    body: fs.createReadStream('price4.csv')
   };
 
   drive.files.create({
@@ -100,11 +101,11 @@ async function updateFile(auth, fileId, fileName) {
     version: 'v3', auth
   });
   var fileMetadata = {
-    name: `/${fileName}`
+    name: `${fileName}`
   };
   var media = {
     mimeType: 'text/plain',
-    body: fs.createReadStream(__dirname + `/${fileName}`)
+    body: fs.createReadStream(`${fileName}`)
   };
 
   // Обновление файла
