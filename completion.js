@@ -240,13 +240,13 @@ const formatedDate = () => {
         var priceSteamDel1 = responseSteam.data[value];
         /* Деление на делители */
         Array.from(dividerForNotAtFilter).forEach((value1) => {
-          if (priceAveragedel1 >= value.from && priceAveragedel1 <= value.to) {
-            priceAveragedel1 /= value1.divider;
+          if (priceAveragedel1 >= value1.from && priceAveragedel1 <= value1.to) {
+            priceAveragedel1 = priceAveragedel1 / value1.divider;
           }
         });
-        Array.from(dividerSteamForPrice4).forEach((value) => {
-          if (priceSteamDel1 >= value.from && priceSteamDel1 <= value.to) {
-            priceSteamDel1 /= value.divider;
+        Array.from(dividerSteamForPrice4).forEach((value2) => {
+          if (priceSteamDel1 >= value2.from && priceSteamDel1 <= value2.to) {
+            priceSteamDel1 = priceSteamDel1 / value2.divider;
           }
         });
         var minPriceWord1 = (priceSteamDel1 <= priceAveragedel1) ? 'steam' : 'average';
