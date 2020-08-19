@@ -1,3 +1,5 @@
+[![CodeFactor](https://www.codefactor.io/repository/github/alexanderivanov20/improvementscsgo/badge)](https://www.codefactor.io/repository/github/alexanderivanov20/improvementscsgo)
+
 # ImprovementsCSGO
 
 This repository has created for comfortable working with CSGO database.
