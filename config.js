@@ -7,7 +7,7 @@ module.exports = {
     steamKey: 'FM3U7yYbHgbko6S8gI4IV7ge1nP4fg7',
     filterDayCount: 7,
     minItemsCount: 7,
-    dividerPrice3: [
+    DividerAverageForPrice3: [
         { from: 0.01, to: 10, divider: 1.5 },
         { from: 10.01, to: 50, divider: 1.6 },
         
@@ -15,11 +15,12 @@ module.exports = {
     dividerSteamForPrice3: [
         { from: 0.00001, to: 5000000, divider: 1.2 }
     ],
-    SteamMultiplier: 1.5,
+    steamMultiplierMax: 1.5,
     dividerForNotAtFilter: [
         { from: 0.00001, to: 5000000, divider: 1.5 }
     ],
     dividerSteamForPrice4: [
         { from: 0.00001, to: 5500000, divider: 1.5 }
-    ]
+    ],
+    restartAfter: 0.00166667
 }
