@@ -5,6 +5,7 @@ const {
     minItemsCount,
     DividerAverageForPrice3,
     steamMultiplierMax,
+    steamMultiplierMin,
     dividerSteamForPrice3,
     dividerForNotAtFilter,
     dividerSteamForPrice4,
@@ -67,13 +68,15 @@ const makeRequest = async (prefinalUrl) => {
 
 /* Запись данных в файл. */
 const writeOrAppendCSVFile = async (recievedData, fileTitle) => {
-    var fields = Object.keys(recievedData[0]);
-    const csv = jsonToCsv(recievedData, {
-        fields: fields,
-        delimiter: ';',
-        quote: ''
-    });
-    fs.writeFileSync(fileTitle, csv);
+    if (recievedData.length !== 0) {
+        var fields = Object.keys(recievedData[0]);
+        const csv = jsonToCsv(recievedData, {
+            fields: fields,
+            delimiter: ',',
+            quote: ''
+        });
+        fs.writeFileSync(fileTitle, csv);
+    }
 }
 
 
@@ -105,6 +108,7 @@ const formatedDate = () => {
 }
 
 
+let i = 1;
 /* Ocновной поток выпонения программы. */
 async function mainFunction() {
     /* Очистка логов */
@@ -114,6 +118,10 @@ async function mainFunction() {
     console.log('Старт');
     loggingActions('Старт');
 
+    finalDate = formatedDate();
+    console.log(chalk.green(`${finalDate} Парсинг данных с ${urlItems}`));
+    loggingActions(`Парсинг данных с ${urlItems}`);
+
     /* Сбор имен всех предметов. */
     var responseSteam;
     try {
@@ -122,6 +130,10 @@ async function mainFunction() {
     } catch (e) {
         console.error(`An error occurred ${e}`);
     }
+
+    finalDate = formatedDate();
+    console.log(chalk.gray(`${finalDate} Запись данных в файл Steam.`));
+    loggingActions(`Запись данных в файл Steam.`);
 
     /* Запись предметов в файл */
     var itemsSteam = Object.keys(responseSteam.data).map((value) => {
@@ -156,8 +168,8 @@ async function mainFunction() {
         });
 
         finalDate = formatedDate();
-        console.log(chalk.green(`${finalDate} Парсинг данных с ${urlItems}`));
-        loggingActions('Отправка запроса: ' + temporaryArray);
+        console.log(chalk.green(`${finalDate} ${i} Отправка запроса.`));
+        loggingActions(`${i} Отправка запроса: ${JSON.stringify(temporaryArray)}`);
 
         /* Сбор истории цены предметов. Если ошибка - цикл и тайаут 10 секунд. */
         var responseOrError = await makeRequest(prefinalUrl);
@@ -166,8 +178,8 @@ async function mainFunction() {
             /* Безконечный цикл, пока не прийдет ответ */
             while (point) {
                 finalDate = formatedDate();
-                console.log(chalk.yellow(`${finalDate} Ошибка... Таймаут 10 секунд.`));
-                loggingActions('Ошибка... Таймаут 10 секунд.');
+                console.log(chalk.yellow(`${finalDate} ${i} Ошибка... Таймаут 10 секунд.`));
+                loggingActions(`${i} Ошибка... Таймаут 10 секунд.`);
 
                 /* Таймаут 10 секунд. */
                 await sleep(10000);
@@ -181,11 +193,11 @@ async function mainFunction() {
                 /* Логгирование ошибки */
                 finalDate = formatedDate();
                 try {
-                    console.log(chalk.red(`${finalDate} Ошибка: `) + responseOrError.e.message);
-                    loggingActions('Ошибка: ' + responseOrError.e.message);
+                    console.log(chalk.red(`${finalDate} ${i} Ошибка: `) + responseOrError.e.message);
+                    loggingActions(`${i} Ошибка: ` + responseOrError.e.message);
                 } catch (e) {
-                    console.log(chalk.red(`${finalDate} Ошибка: `) + responseOrError.e);
-                    loggingActions('Ошибка: ' + responseOrError.e);
+                    console.log(chalk.red(`${finalDate} ${i} Ошибка: `) + responseOrError.e);
+                    loggingActions(`${i} Ошибка: ` + responseOrError.e);
                 }
             }
             responseOrError = responseOrError.data;
@@ -193,10 +205,16 @@ async function mainFunction() {
             responseOrError = responseOrError.data;
         }
         finalDate = formatedDate();
-        console.log(chalk.cyan(`${finalDate} Получение данных.`));
-        loggingActions('Получение данных: ' + Object.values(responseOrError).map((value) => {
-            return value.average;
-        }));
+        console.log(chalk.cyan(`${finalDate} ${i} Получение данных.`));
+        loggingActions(`${i} Получение данных: ` + JSON.stringify(Object.keys(responseOrError).map((value) => {
+            var his = Array.from(responseOrError[value].history);
+            his = his.map((element) => {
+                var date = new Date(element[0] * 1000);
+                d = `${date.getUTCDate()}/${date.getMonth() + 1}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`
+                return [Number((element[1]).toFixed(2)), 'rub', d];
+            });
+            return his;
+        })));
 
         /* Cинтаксический анализ (фильтрация) полученных данных (истории цен). */
         var finalObject = [];
@@ -210,6 +228,7 @@ async function mainFunction() {
             var item = responseOrError[value];
             var history = item.history;
             var steamMultiplierPrice = Number((responseSteam.data[value] * curs * steamMultiplierMax).toFixed(2));
+            var steamMultiplierPriceMin = Number((responseSteam.data[value] * curs * steamMultiplierMin).toFixed(2));
             var filteredHistory = [];
             var nofilteredHistory = [];
             var nowDate = new Date();
@@ -224,7 +243,7 @@ async function mainFunction() {
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
                 /* Сортировка. */
-                if (diffDays <= filterDayCount && element[1] <= steamMultiplierPrice) {
+                if (diffDays <= filterDayCount && element[1] <= steamMultiplierPrice && element[1] >= steamMultiplierPriceMin) {
                     filteredHistory.push(element);
                 } else {
                     nofilteredHistory.push(element);
@@ -236,10 +255,10 @@ async function mainFunction() {
                 filteredHistory.forEach((element) => {
                     /* Пересчёт среднего арифметического. */
                     var date = new Date(element[0] * 1000);
-                    element.push(
-                        `${date.getUTCDate()}/${date.getMonth() + 1}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`
-                    );
-                    finalFilteredHistory.push(element);
+                    d = `${date.getUTCDate()}/${date.getMonth() + 1}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`
+
+                    some = [Number((element[1]).toFixed(2)), 'rub', d];
+                    finalFilteredHistory.push(some);
                     newAverage += element[1];
                     /* Пересчет макс. и мин. цены. */
                     if (newMax < element[1]) {
@@ -258,10 +277,11 @@ async function mainFunction() {
                 nofilteredHistory.forEach((element) => {
                     /* Пересчёт среднего арифметического. */
                     var date = new Date(element[0] * 1000);
-                    element.push(
-                        `${date.getUTCDate()}/${date.getMonth() + 1}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`
-                    );
-                    finalnoFilteredHistory.push(element);
+                    d = `${date.getUTCDate()}/${date.getMonth() + 1}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`
+
+                    some = [Number((element[1]).toFixed(2)), 'rub', d];
+                    finalnoFilteredHistory.push(some);
+
                     newAverageSome += element[1];
                     /* Пересчет макс. и мин. цены. */
                     if (newMaxSome < element[1]) {
@@ -272,56 +292,60 @@ async function mainFunction() {
                     }
                 });
 
-                /* Новое среднее арифметическое. */
-                newAverageSome = newAverageSome / nofilteredHistory.length;
+                if (nofilteredHistory.length !== 0) {
 
-                /* Деление на различные делители в зависимости от промежутка. */
-                Array.from(DividerAverageForPrice3).forEach((value) => {
-                    if (newAverageSome >= value.from && newAverageSome <= value.to) {
-                        newAverageSome /= value.divider;
-                    }
-                });
+                    /* Новое среднее арифметическое. */
+                    newAverageSome = newAverageSome / nofilteredHistory.length;
 
-                /* Запись предмета, который не прошел фильтрацию */
-                var priceAveragedel1 = item.average / curs;
-                var priceSteamDel1 = responseSteam.data[value];
+                    /* Деление на различные делители в зависимости от промежутка. */
+                    Array.from(DividerAverageForPrice3).forEach((value) => {
+                        if (newAverageSome >= value.from && newAverageSome <= value.to) {
+                            newAverageSome /= value.divider;
+                        }
+                    });
 
-                /* Деление на делители */
-                Array.from(dividerForNotAtFilter).forEach((value1) => {
-                    if (priceAveragedel1 >= value1.from && priceAveragedel1 <= value1.to) {
-                        priceAveragedel1 = priceAveragedel1 / value1.divider;
-                    }
-                });
-                Array.from(dividerSteamForPrice4).forEach((value2) => {
-                    if (priceSteamDel1 >= value2.from && priceSteamDel1 <= value2.to) {
-                        priceSteamDel1 = priceSteamDel1 / value2.divider;
-                    }
-                });
+                    /* Запись предмета, который не прошел фильтрацию */
+                    var priceAveragedel1 = item.average / curs;
+                    var priceSteamDel1 = responseSteam.data[value];
 
-                var minPriceWord1 = (priceSteamDel1 <= priceAveragedel1) ? 'steam' : 'average';
-                var minPriceDel1 = (priceSteamDel1 <= priceAveragedel1) ? priceSteamDel1 : priceAveragedel1;
-                /* Запись в массив */
-                finalObjectThirdStep.push({
-                    name: value,
-                    SteamMultiplierMax: steamMultiplierPrice,
-                    max: newMaxSome,
-                    min: newMinSome,
-                    NewAverage: Number(newAverageSome.toFixed(2)),
-                    "Курс рубля": curs,
-                    Steam: responseSteam.data[value],
-                    // steamMultiplier: Number((responseSteam.data[value] * steamMultiplierMax).toFixed(2)),
-                    price4: Number(minPriceDel1.toFixed(2)),
-                    leastPrice: minPriceWord1,
-                    priceAveragedel: Number(priceAveragedel1.toFixed(2)),
-                    priceSteamDel: Number(priceSteamDel1.toFixed(2)),
-                    history: nofilteredHistory
-                });
-                /* Для price4 */
-                finalObjectThirdStepPrice4.push({
-                    name: value,
-                    price: Number(minPriceDel1.toFixed(2)),
-                    russian: value
-                });
+                    /* Деление на делители */
+                    Array.from(dividerForNotAtFilter).forEach((value1) => {
+                        if (priceAveragedel1 >= value1.from && priceAveragedel1 <= value1.to) {
+                            priceAveragedel1 = priceAveragedel1 / value1.divider;
+                        }
+                    });
+                    Array.from(dividerSteamForPrice4).forEach((value2) => {
+                        if (priceSteamDel1 >= value2.from && priceSteamDel1 <= value2.to) {
+                            priceSteamDel1 = priceSteamDel1 / value2.divider;
+                        }
+                    });
+
+                    var minPriceWord1 = (priceSteamDel1 <= priceAveragedel1) ? 'steam' : 'average';
+                    var minPriceDel1 = (priceSteamDel1 <= priceAveragedel1) ? priceSteamDel1 : priceAveragedel1;
+                    /* Запись в массив */
+                    finalObjectThirdStep.push({
+                        name: value,
+                        SteamMultiplierMax: steamMultiplierPrice,
+                        SteamMultiplierMin: steamMultiplierPriceMin,
+                        max: newMaxSome,
+                        min: newMinSome,
+                        NewAverage: Number(newAverageSome.toFixed(2)),
+                        "Курс рубля": curs,
+                        Steam: responseSteam.data[value],
+                        // steamMultiplier: Number((responseSteam.data[value] * steamMultiplierMax).toFixed(2)),
+                        price4: [Number(minPriceDel1.toFixed(2)), Number((minPriceDel1 * curs).toFixed(2))],
+                        leastPrice: minPriceWord1,
+                        priceAveragedel: Number((priceAveragedel1 * 60).toFixed(2)),
+                        priceSteamDel: Number((priceSteamDel1 * 60).toFixed(2)),
+                        history: finalnoFilteredHistory
+                    });
+                    /* Для price4 */
+                    finalObjectThirdStepPrice4.push({
+                        name: value,
+                        price: Number(minPriceDel1.toFixed(2)),
+                        russian: value
+                    });
+                }
             }
             /* Новое среднее арифметическое. */
             newAverage = newAverage / filteredHistory.length;
@@ -338,6 +362,7 @@ async function mainFunction() {
                 finalObject.push({
                     name: value,
                     SteamMultiplierMax: steamMultiplierPrice,
+                    SteamMultiplierMin: steamMultiplierPriceMin,
                     max: newMax,
                     min: newMin,
                     NewAverage: Number(newAverage.toFixed(2)),
@@ -365,6 +390,7 @@ async function mainFunction() {
                 finalObjectSecondStep.push({
                     name: value,
                     SteamMultiplierMax: steamMultiplierPrice,
+                    SteamMultiplierMin: steamMultiplierPriceMin,
                     max: newMax,
                     min: newMin,
                     NewAverage: Number(newAverage.toFixed(2)),
@@ -373,9 +399,9 @@ async function mainFunction() {
                     // steamMultiplier: Number((responseSteam.data[value] * steamMultiplierMax).toFixed(2)),
                     price3: [minPriceDel, Number((minPriceDel * curs).toFixed(2))],
                     leastPrice: minPriceWord,
-                    priceAveragedel: priceAveragedel,
-                    priceStemDel: Number((priceSteamDel).toFixed(2)),
-                    history: filteredHistory
+                    priceAveragedel: Number((priceAveragedel * curs).toFixed(2)),
+                    priceStemDel: Number((priceSteamDel * curs).toFixed(2)),
+                    history: finalFilteredHistory
                 });
             }
         });
@@ -389,8 +415,8 @@ async function mainFunction() {
 
         /* Запись в файлы. */
         finalDate = formatedDate();
-        console.log(chalk.gray(`${finalDate} Запись данных в файл Steam`));
-        loggingActions('Запись данных в файл Steam');
+        console.log(chalk.gray(`${finalDate} ${i} Запись данных в CSV файл. Курс: ${curs}`));
+        loggingActions(`${i} Запись данных в CSV файл. Курс: ${curs}`);
 
         /* Запись всех данных */
         writeOrAppendCSVFile(objectForCSV, './filterPrice3.csv');
@@ -400,6 +426,7 @@ async function mainFunction() {
         writeOrAppendCSVFile(objectForCSV4, './price4.csv');
 
         prefinalUrl = `https://market.csgo.com/api/v2/get-list-items-info?key=${steamKey}`;
+        i += 1;
     }
     /* Загрузка файла в Google диск. */
     console.log(chalk.red('Запись данных на Google Диск.'));
@@ -408,7 +435,3 @@ async function mainFunction() {
 
 
 mainFunction();
-
-// setInterval(() => {
-//   mainFunction();
-// }, restartAfter * 1000 * 60);

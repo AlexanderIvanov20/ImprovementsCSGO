@@ -16,6 +16,7 @@ module.exports = {
         { from: 0.00001, to: 5000000, divider: 1.2 }
     ],
     steamMultiplierMax: 1.5,
+    steamMultiplierMin: 1.0,
     dividerForNotAtFilter: [
         { from: 0.00001, to: 5000000, divider: 1.5 }
     ],
