@@ -107,8 +107,6 @@ const formatedDate = () => {
     return finalDate1;
 }
 
-
-let i = 1;
 /* Ocновной поток выпонения программы. */
 async function mainFunction() {
     /* Очистка логов */
@@ -157,9 +155,12 @@ async function mainFunction() {
     console.log(chalk.yellow(`${finalDate} Парсинг курса рубля с https://www.cbr.ru`));
     loggingActions(`Парсинг курса рубля с https://www.cbr.ru`);
     var curs = await getCursOfDollar();
+    console.log(chalk.yellow(`${finalDate} Курс рубля ${curs}`));
+    loggingActions(`Курс рубля ${curs}`);
 
+    let i = 1;
     for (var item = 0; item < keysItems.length; item += 50) {
-        // for (var item = 0; item < 50; item += 50) {
+    // for (var item = 0; item < 50; item += 50) {
         /* Формирование ссылки для 50-ти предметов. */
         var temporaryArray = keysItems.slice(item, item + 50);
         temporaryArray.forEach((value) => {
@@ -429,9 +430,11 @@ async function mainFunction() {
         i += 1;
     }
     /* Загрузка файла в Google диск. */
-    console.log(chalk.red('Запись данных на Google Диск.'));
+    var finalDate = formatedDate();
+    console.log(chalk.red(`${finalDate} Запись данных на Google Диск.`));
     uploadFileCompletion.startUploading();
-}
 
+    setTimeout(mainFunction, restartAfter * 1000 * 60);
+}
 
 mainFunction();

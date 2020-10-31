@@ -23,5 +23,5 @@ module.exports = {
     dividerSteamForPrice4: [
         { from: 0.00001, to: 5500000, divider: 1.5 }
     ],
-    restartAfter: 0.00166667
+    restartAfter: 10
 }
