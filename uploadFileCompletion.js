@@ -61,58 +61,45 @@ function getAccessToken(oAuth2Client, callback) {
 
 
 // Выгрузка файлов в Google Drive
-async function storeFiles(auth) {
+async function storeFile(auth, title) {
   const drive = google.drive({
-    version: 'v3', auth
+    version: 'v3', auth,
   });
 
-  var fileMetadata3 = {
-    'name': 'price3.csv'
+  const fileMetadata3 = {
+    name: title,
   };
-  var media3 = {
+  const media3 = {
     mimeType: 'text/plain',
-    body: fs.createReadStream('price3.csv')
-  };
-
-  var fileMetadata4 = {
-    'name': 'price4.csv'
-  };
-  var media4 = {
-    mimeType: 'text/plain',
-    body: fs.createReadStream('price4.csv')
+    body: fs.createReadStream(title),
   };
 
   drive.files.create({
     resource: fileMetadata3,
     media: media3,
-    fields: 'id'
-  });
-  drive.files.create({
-    resource: fileMetadata4,
-    media: media4,
-    fields: 'id'
+    fields: 'id',
   });
 }
 
 
-// Обновление файла 
+// Обновление файла
 async function updateFile(auth, fileId, fileName) {
   const drive = google.drive({
-    version: 'v3', auth
+    version: 'v3', auth,
   });
-  var fileMetadata = {
-    name: `${fileName}`
+  const fileMetadata = {
+    name: `${fileName}`,
   };
-  var media = {
+  const media = {
     mimeType: 'text/plain',
-    body: fs.createReadStream(`${fileName}`)
+    body: fs.createReadStream(`${fileName}`),
   };
 
   // Обновление файла
   drive.files.update({
     fileId: fileId,
     resource: fileMetadata,
-    media: media
+    media: media,
   });
 }
 
@@ -120,7 +107,7 @@ async function updateFile(auth, fileId, fileName) {
 // Получение списка файлов
 function listFiles(auth) {
   const drive = google.drive({
-    version: 'v3', auth
+    version: 'v3', auth,
   });
   drive.files.list({
     fields: 'files(id, name)',
@@ -129,24 +116,56 @@ function listFiles(auth) {
     const files = res.data.files;
 
     if (files.length) {
-      var point = false;
-      // Проверка, если имя файла price.csv
-      for (var item of files) {
-        if (item.name === 'price3.csv') point = true;
+      let p1 = false;
+      let p2 = false;
+      let p3 = false;
+      let p4 = false;
+      let p5 = false;
+      files.map((file) => {
+        // Обновление файла
+        if (file.name === 'price3.csv') {
+          updateFile(auth, file.id, 'price3.csv');
+          p1 = true;
+        }
+        if (file.name === 'price4.csv') {
+          updateFile(auth, file.id, 'price4.csv');
+          p2 = true;
+        }
+        if (file.name === 'filterPrice3.csv') {
+          updateFile(auth, file.id, 'filterPrice3.csv');
+          p3 = true;
+        }
+        if (file.name === 'filterSteamAndAverage.csv') {
+          updateFile(auth, file.id, 'filterSteamAndAverage.csv');
+          p4 = true;
+        }
+        if (file.name === 'filterSteamAverageForNotAtFilter.csv') {
+          updateFile(auth, file.id, 'filterSteamAverageForNotAtFilter.csv');
+          p5 = true;
+        }
+      });
+
+      if (!p1) {
+        storeFile(auth, 'price3.csv');
       }
-      if (point) {
-        files.map((file) => {
-          // Обновление файла
-          if (file.name === 'price3.csv') updateFile(auth, file.id, 'price3.csv');
-          if (file.name === 'price4.csv') updateFile(auth, file.id, 'price4.csv');
-        });
+      if (!p2) {
+        storeFile(auth, 'price4.csv');
       }
-      else {
-        storeFiles(auth,);
+      if (!p3) {
+        storeFile(auth, 'filterPrice3.csv');
       }
-    }
-    else {
-      storeFiles(auth);
+      if (!p4) {
+        storeFile(auth, 'filterPrice3.csv');
+      }
+      if (!p5) {
+        storeFile(auth, 'filterSteamAverageForNotAtFilter.csv');
+      }
+    } else {
+      storeFile(auth, 'price3.csv');
+      storeFile(auth, 'price4.csv');
+      storeFile(auth, 'filterPrice3.csv');
+      storeFile(auth, 'filterSteamAndAverage.csv');
+      storeFile(auth, 'filterSteamAverageForNotAtFilter.csv');
     }
   });
 }

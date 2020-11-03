@@ -8,20 +8,20 @@ module.exports = {
     filterDayCount: 7,
     minItemsCount: 7,
     DividerAverageForPrice3: [
-        { from: 0.01, to: 10, divider: 1.5 },
-        { from: 10.01, to: 50, divider: 1.6 },
+        { from: 0.01, to: 10, divider: 1.45 },
+        { from: 10.01, to: 5000000, divider: 1.45 },
         
     ],
     dividerSteamForPrice3: [
-        { from: 0.00001, to: 5000000, divider: 1.2 }
+        { from: 0.00001, to: 5000000, divider: 1.45 }
     ],
     steamMultiplierMax: 1.5,
-    steamMultiplierMin: 1.0,
+    steamMultiplierMin: 0.5,
     dividerForNotAtFilter: [
-        { from: 0.00001, to: 5000000, divider: 1.5 }
+        { from: 0.00001, to: 5000000, divider: 2 }
     ],
     dividerSteamForPrice4: [
-        { from: 0.00001, to: 5500000, divider: 1.5 }
+        { from: 0.00001, to: 5500000, divider: 2 }
     ],
-    restartAfter: 10
+    restartAfter: 1000
 }
