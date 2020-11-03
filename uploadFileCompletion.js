@@ -70,7 +70,7 @@ async function storeFile(auth, title) {
     name: title,
   };
   const media3 = {
-    mimeType: 'text/plain',
+    mimeType: 'text/csv',
     body: fs.createReadStream(title),
   };
 
@@ -91,7 +91,7 @@ async function updateFile(auth, fileId, fileName) {
     name: `${fileName}`,
   };
   const media = {
-    mimeType: 'text/plain',
+    mimeType: 'text/csv',
     body: fs.createReadStream(`${fileName}`),
   };
 
@@ -155,7 +155,7 @@ function listFiles(auth) {
         storeFile(auth, 'filterPrice3.csv');
       }
       if (!p4) {
-        storeFile(auth, 'filterPrice3.csv');
+        storeFile(auth, 'filterSteamAndAverage.csv');
       }
       if (!p5) {
         storeFile(auth, 'filterSteamAverageForNotAtFilter.csv');
