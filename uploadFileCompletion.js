@@ -61,7 +61,7 @@ function getAccessToken(oAuth2Client, callback) {
 
 
 // Выгрузка файлов в Google Drive
-async function storeFile(auth, title) {
+function storeFile(auth, title) {
   const drive = google.drive({
     version: 'v3', auth,
   });
@@ -83,7 +83,7 @@ async function storeFile(auth, title) {
 
 
 // Обновление файла
-async function updateFile(auth, fileId, fileName) {
+function updateFile(auth, fileId, fileName) {
   const drive = google.drive({
     version: 'v3', auth,
   });
